@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>六年級英語能力挑戰評測</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f7fafc;
+        }
+        .question-card, .test-selection-card, .results-card {
+            transition: all 0.3s ease-in-out;
+            border-left-width: 4px;
+        }
+        .test-selection-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .option-label {
+            transition: all 0.2s ease-in-out;
+        }
+        .option-label:hover {
+            background-color: #ebf8ff; /* light blue */
+        }
+        .correct {
+            border-left-color: #38a169; /* green-600 */
+            background-color: #f0fff4; /* green-50 */
+        }
+        .incorrect {
+            border-left-color: #e53e3e; /* red-600 */
+            background-color: #fff5f5; /* red-50 */
+        }
+        .btn-primary {
+            background-color: #4299e1; /* blue-500 */
+        }
+        .btn-primary:hover {
+            background-color: #3182ce; /* blue-600 */
+        }
+        .btn-secondary {
+            background-color: #718096; /* gray-600 */
+        }
+        .btn-secondary:hover {
+            background-color: #4a5568; /* gray-700 */
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div id="app" class="container mx-auto p-4 md:p-8 max-w-5xl">
+        
+        <!-- Main Header -->
+        <header class="text-center mb-8">
+            <h1 id="main-title" class="text-4xl font-bold text-blue-700">六年級英語能力挑戰評測</h1>
+            <p id="main-subtitle" class="text-gray-500 mt-2">請選擇一份試卷開始作答</p>
+        </header>
+
+        <!-- Test Selection View -->
+        <div id="selection-view">
+            <div id="test-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Test selection cards will be rendered here -->
+            </div>
+        </div>
+
+        <!-- Test Taking View -->
+        <div id="test-view" class="hidden">
+            <div id="test-container">
+                <!-- Questions will be rendered here -->
+            </div>
+            <div id="controls" class="mt-8 flex justify-between items-center">
+                 <button id="back-to-selection-btn" class="btn-secondary text-white font-bold py-3 px-6 rounded-full hover:shadow-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300">
+                    <i class="fas fa-arrow-left mr-2"></i>返回選單
+                </button>
+                <button id="submit-btn" class="btn-primary text-white font-bold py-3 px-8 rounded-full hover:shadow-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
+                    <i class="fas fa-check-circle mr-2"></i>提交批改
+                </button>
+            </div>
+        </div>
+        
+        <!-- Results View -->
+        <div id="results-view" class="hidden mt-8">
+             <div class="results-card bg-white p-6 rounded-2xl shadow-lg text-center mb-8 border-l-blue-500">
+                <h2 class="text-3xl font-bold mb-4">測驗結果</h2>
+                <p id="score" class="text-6xl font-bold text-blue-600 mb-2"></p>
+                <p id="score-text" class="text-gray-600 text-xl"></p>
+            </div>
+            <div id="answers-breakdown">
+                <!-- Detailed answers will be rendered here -->
+            </div>
+            <div class="mt-8 text-center">
+                <button id="reset-btn" class="btn-secondary text-white font-bold py-3 px-8 rounded-full hover:shadow-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300">
+                    <i class="fas fa-arrow-left mr-2"></i>返回選單
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATA ---
+        // Note: The provided text file has been parsed and structured into this JSON format.
+        // Answer keys 'A','B','C','D' are mapped to 1,2,3,4 respectively.
+        const allTestsData = [
+            // Test 1
+            {
+                title: "六年級英語能力挑戰評測 (一)",
+                sections: [
+                    { title: "第一部分：詞彙與應用", questions: [
+                        { id: 1, text: "An **engineer** is a person who designs and builds machines or structures, often using science and math. Which word best fits the blank?", options: ["doctor", "lawyer", "engineer", "mailman"], answer: 3, explanation: "工程師 (engineer)" },
+                        { id: 2, text: "After the heavy storm, the news reported on the damage caused by the _______.", options: ["earthquake", "typhoon", "volcano", "flood"], answer: 2, explanation: "颱風 (typhoon)" },
+                        { id: 3, text: "My little sister loves playing with her _______ and other _______.", options: ["ball; games", "dolls; toys", "books; pencils", "food; snacks"], answer: 2, explanation: "洋娃娃；玩具 (dolls; toys)" },
+                        { id: 4, text: "A ruler is usually measured in _______.", options: ["kilometers", "meters", "centimeters", "millimeters"], answer: 3, explanation: "公分 (centimeters)" },
+                        { id: 5, text: "If you want to read, borrow, or return books, you should go to the _______.", options: ["bookstore", "library", "museum", "post office"], answer: 2, explanation: "圖書館 (library)" },
+                        { id: 6, text: "We were late for school because of the _______.", options: ["good weather", "heavy traffic", "fast train", "clear sky"], answer: 2, explanation: "交通擁擠 (heavy traffic)" },
+                        { id: 7, text: "Many famous paintings from different countries are displayed in the _______.", options: ["hospital", "supermarket", "museum", "cinema"], answer: 3, explanation: "博物館 (museum)" },
+                        { id: 8, text: "I want to buy some fresh bread for breakfast. I should go to the _______.", options: ["restaurant", "bakery", "bank", "market"], answer: 2, explanation: "麵包店 (bakery)" },
+                        { id: 9, text: "A _______ interviews people and writes news stories for newspapers or TV.", options: ["cook", "reporter", "driver", "teacher"], answer: 2, explanation: "記者 (reporter)" },
+                        { id: 10, text: "The magician performed an amazing _______ that made everyone gasp.", options: ["funny story", "magic trick", "kind action", "bright idea"], answer: 2, explanation: "魔術把戲 (magic trick)" }
+                    ]},
+                    { title: "第二部分：文法與句型", questions: [
+                        { id: 11, text: "My brother _______ basketball right now.", options: ["play", "played", "is playing", "plays"], answer: 3, explanation: "現在進行式" },
+                        { id: 12, text: "_______ do you visit your grandparents? Once a week.", options: ["How long", "How often", "How many", "How much"], answer: 2, explanation: "詢問頻率" },
+                        { id: 13, text: "John _______ (usually) his homework after dinner.", options: ["usually does", "does usually", "is usually doing", "usually doing"], answer: 1, explanation: "頻率副詞位置與主詞動詞單複數" },
+                        { id: 14, text: "It rained heavily, _______ we decided to stay at home.", options: ["but", "so", "or", "although"], answer: 2, explanation: "因果關係" },
+                        { id: 15, text: "A: Where is the post office? B: _______ Main Street.", options: ["It’s at", "It’s in", "It’s on", "It’s of"], answer: 3, explanation: "介系詞用於街道" },
+                        { id: 16, text: "My little sister _______ cries when she is hungry.", options: ["often", "is often", "often is", "has often"], answer: 1, explanation: "頻率副詞位置" },
+                        { id: 17, text: "Last night, I _______ a strange noise from the old house.", options: ["hear", "heard", "hearing", "hears"], answer: 2, explanation: "過去式動詞" },
+                        { id: 18, text: "There aren’t _______ students in the classroom today.", options: ["much", "any", "some", "a lot"], answer: 2, explanation: "否定句中可數名詞複數" },
+                        { id: 19, text: "You _______ take care of yourself when you travel alone.", options: ["should", "can", "may", "must"], answer: 1, explanation: "情態助動詞後接原型動詞" },
+                        { id: 20, text: "My older brother is _______ than me.", options: ["smart", "smarter", "smartest", "most smart"], answer: 2, explanation: "形容詞比較級" }
+                    ]},
+                    { title: "第三部分：克漏字測驗", passage: `<p>One day, Sarah found a little bird with a broken wing. She felt very __21__ for it. She decided to __22__ it home and take care of it. She carefully put the bird in a shoebox and gave it some water and food. Every day, she would __23__ its wing and talk to it softly. Slowly, the bird started to __24__ better. Sarah was so __25__ to see it fly again.</p>`, questions: [
+                        { id: 21, text: "21.", options: ["happy", "bored", "sorry", "excited"], answer: 3, explanation: "為某事感到抱歉/難過" },
+                        { id: 22, text: "22.", options: ["bring", "leave", "send", "throw"], answer: 1, explanation: "帶回" },
+                        { id: 23, text: "23.", options: ["touch", "kick", "hit", "pull"], answer: 1, explanation: "觸摸、處理" },
+                        { id: 24, text: "24.", options: ["smell", "taste", "feel", "hear"], answer: 3, explanation: "感覺" },
+                        { id: 25, text: "25.", options: ["sad", "angry", "surprised", "tired"], answer: 3, explanation: "感到驚訝的" }
+                    ]},
+                    { title: "第四部分：閱讀測驗", passage: `
+                        <h4 class="font-bold text-lg mb-2">Passage 1: The Old Lighthouse</h4>
+                        <div class="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border">
+                           <p>The old lighthouse stood tall on the rocky coast, watching over the sea. For more than a hundred years, its light had guided ships safely through the dark nights and foggy waters. Many sailors considered it a symbol of hope and safety. Inside, a kind old man named Captain Ben had been the lighthouse keeper for fifty years. He loved the sea and felt a deep connection to every ship that passed by. One stormy night, the power went out, and the lighthouse light stopped working. The waves crashed fiercely against the rocks, and a ship was approaching, unaware of the danger. Captain Ben, despite his old age, quickly climbed to the top of the lighthouse. He used an old emergency lantern, manually spinning it to send out a dim, flickering light. He stayed there all night, making sure the ship found its way to safety. The next morning, when the power returned, everyone praised Captain Ben for his bravery and quick thinking. He simply smiled, saying, "It's my job to protect those at sea."</p>
+                        </div>`, questions: [
+                        { id: 26, text: "What is the main purpose of the lighthouse?", options: ["To entertain tourists.", "To warn people about storms.", "To guide ships and ensure their safety.", "To show how old Captain Ben is."], answer: 3, explanation: "文章主旨為燈塔引導船隻確保安全。" },
+                        { id: 27, text: "How long had Captain Ben been the lighthouse keeper?", options: ["More than a hundred years.", "Less than fifty years.", "Exactly fifty years.", "The passage doesn't say."], answer: 3, explanation: "文章明確提到船長擔任守塔人五十年。" },
+                        { id: 28, text: "What happened to the lighthouse light during the stormy night?", options: ["It became brighter than usual.", "It was destroyed by the waves.", "It stopped working due to a power outage.", "Captain Ben turned it off on purpose."], answer: 3, explanation: "暴風雨之夜因停電而停止運作。" },
+                        { id: 29, text: "How did Captain Ben solve the problem that night?", options: ["He called for help immediately.", "He waited for the power to return.", "He used an emergency lantern and manually operated it.", "He used a flashlight from his pocket."], answer: 3, explanation: "他使用緊急提燈手動操作。" },
+                        { id: 30, text: "What does Captain Ben's last sentence, \"It's my job to protect those at sea,\" tell us about him?", options: ["He is very proud of his work.", "He believes it's his duty to help others.", "He is tired of his job but continues to do it.", "He wants to be famous for his bravery."], answer: 2, explanation: "這句話顯示他認為幫助他人是他的職責。" }
+                    ]},
+                    { title: "", passage: `
+                        <h4 class="font-bold text-lg mb-2 mt-6">Passage 2: The Invention of Paper</h4>
+                        <div class="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border">
+                           <p>Before paper was invented, people used many different things to write on. Ancient Egyptians wrote on papyrus, which was made from plants. In Mesopotamia, people used clay tablets. The Chinese used bamboo or silk. However, these materials were heavy, expensive, or difficult to prepare.</p>
+                           <p>Paper as we know it today was invented in China around 105 AD by Cai Lun, an official in the Han Dynasty. He discovered a way to make paper using tree bark, hemp, old rags, and fishing nets. These materials were mixed with water, pounded into a pulp, and then pressed into thin sheets. This new material was much cheaper, lighter, and easier to write on than previous ones.</p>
+                           <p>The invention of paper greatly influenced the spread of knowledge and education. Books became easier to produce, and information could be shared more widely. Over centuries, the technology of papermaking slowly spread to other parts of the world, including the Middle East and Europe. Today, paper is still widely used around the globe, even with the rise of digital technology.</p>
+                        </div>`, questions: [
+                        { id: 31, text: "What did people in Mesopotamia use to write on before paper?", options: ["Papyrus.", "Bamboo.", "Clay tablets.", "Silk."], answer: 3, explanation: "美索不達米亞人使用泥板書寫。" },
+                        { id: 32, text: "According to the passage, who invented paper?", options: ["An ancient Egyptian.", "Cai Lun.", "A European monk.", "A Mesopotamian artist."], answer: 2, explanation: "根據文章，蔡倫發明了紙。" },
+                        { id: 33, text: "Which of the following was NOT a material used by Cai Lun to make paper?", options: ["Tree bark.", "Fishing nets.", "Clay.", "Old rags."], answer: 3, explanation: "泥土不是蔡倫造紙用的材料。" },
+                        { id: 34, text: "What was one major advantage of paper compared to older writing materials?", options: ["It was heavier.", "It was more expensive.", "It was easier to prepare and lighter.", "It was only available in China."], answer: 3, explanation: "紙張比舊材料更容易準備且更輕。" },
+                        { id: 35, text: "What is the main idea of this passage?", options: ["Ancient civilizations used many writing materials.", "Paper was invented in China and changed how knowledge was shared.", "Cai Lun was a famous official in the Han Dynasty.", "Digital technology will soon replace paper entirely."], answer: 2, explanation: "文章主旨是紙的發明改變了知識的傳播方式。" }
+                    ]}
+                ]
+            },
+            // Test 2
+            {
+                title: "六年級英語能力挑戰評測 (二)",
+                sections: [
+                     { title: "第一部分：詞彙與應用", questions: [
+                        { id: 36, text: "My grandmother is a great _______; she cooks delicious meals every day.", options: ["actor", "cook", "driver", "farmer"], answer: 2, explanation: "廚師 (cook)" },
+                        { id: 37, text: "Be careful! The floor is wet, or you might _______.", options: ["jump", "fly", "fall", "run"], answer: 3, explanation: "掉落 (fall)" },
+                        { id: 38, text: "The little bird _______ its wings and flew high into the sky.", options: ["shook", "brushed", "caught", "pulled"], answer: 1, explanation: "搖動 (shook)" },
+                        { id: 39, text: "My younger brother is very _______; he always tries to help others.", options: ["selfish", "lazy", "helpful", "naughty"], answer: 3, explanation: "有益的；樂於助人的 (helpful)" },
+                        { id: 40, text: "If you want to know the meaning of a word, you should look it up in a _______.", options: ["notebook", "dictionary", "workbook", "blackboard"], answer: 2, explanation: "字典 (dictionary)" },
+                        { id: 41, text: "The new movie at the _______ is getting good reviews. Let’s go watch it this weekend.", options: ["hospital", "market", "movie theater", "office"], answer: 3, explanation: "電影院 (movie theater)" },
+                        { id: 42, text: "I don't like _______ weather; I prefer it when it's sunny.", options: ["rainy", "hot", "cold", "warm"], answer: 1, explanation: "下雨的 (rainy)" },
+                        { id: 43, text: "The _______ on the road was heavy, so we arrived late.", options: ["wind", "traffic", "air", "noise"], answer: 2, explanation: "交通 (traffic)" },
+                        { id: 44, text: "This _______ of shoes is too big for me. I need a smaller one.", options: ["piece", "bottle", "pair", "pack"], answer: 3, explanation: "一雙 (pair)" },
+                        { id: 45, text: "My dream is to travel around the _______ and see many different places.", options: ["country", "city", "world", "island"], answer: 3, explanation: "世界 (world)" }
+                    ]},
+                    { title: "第二部分：文法與句型", questions: [
+                        { id: 46, text: "She _______ (not) play the piano every day.", options: ["isn’t", "doesn’t", "don’t", "won’t"], answer: 2, explanation: "現在簡單式否定句" },
+                        { id: 47, text: "A: Is your father a doctor? B: Yes, _______.", options: ["he is a doctor", "he is", "he does", "he does a doctor"], answer: 2, explanation: "Be動詞問句簡答" },
+                        { id: 48, text: "They _______ to the library when I saw them yesterday.", options: ["go", "went", "are going", "will go"], answer: 2, explanation: "過去式動詞" },
+                        { id: 49, text: "_______ is your favorite color? My favorite color is blue.", options: ["What", "Which", "Who", "How"], answer: 1, explanation: "詢問事物" },
+                        { id: 50, text: "My mom _______ (make) dinner for us now.", options: ["is making", "makes", "made", "make"], answer: 1, explanation: "現在進行式" },
+                        { id: 51, text: "The boy _______ (who/that) won the race is my cousin.", options: ["who", "whose", "which", "where"], answer: 1, explanation: "關係代名詞，修飾人" },
+                        { id: 52, text: "I _______ (not/finish) my homework yet. I’m still working on it.", options: ["didn’t finish", "haven’t finished", "don’t finish", "am not finishing"], answer: 2, explanation: "現在完成式，表示動作未完成" },
+                        { id: 53, text: "My father _______ me go to the party.", options: ["makes", "lets", "allows", "tells"], answer: 2, explanation: "使役動詞 'let' 後接原型動詞" },
+                        { id: 54, text: "We saw her _______ across the street.", options: ["walked", "walks", "walking", "to walk"], answer: 3, explanation: "感官動詞 'see' 後接 Ving 表示正在進行" },
+                        { id: 55, text: "The cake _______ sweet.", options: ["tastes", "is tasting", "tasted", "to taste"], answer: 1, explanation: "連綴動詞 'taste' 後接形容詞" }
+                    ]},
+                     { title: "第三部分：克漏字測驗", passage: `<p>Last summer, my family decided to go on a trip to Japan. We traveled __21__ airplane, which was very exciting for me because it was my first time flying. When we __22__ in Tokyo, the city was full of people and tall buildings. We visited many famous __23__, including ancient temples and modern museums. The food was also amazing, especially the sushi and ramen. We __24__ every moment of our trip and took lots of pictures. I hope we can __25__ there again next year!</p>`, questions: [
+                        { id: 56, text: "21.", options: ["on", "by", "in", "with"], answer: 2, explanation: "搭乘交通工具用 by" },
+                        { id: 57, text: "22.", options: ["arrived", "went", "came", "departed"], answer: 1, explanation: "到達，符合句意" },
+                        { id: 58, text: "23.", options: ["foods", "clothes", "places", "animals"], answer: 3, explanation: "地點，符合文意" },
+                        { id: 59, text: "24.", options: ["hated", "enjoyed", "ignored", "forgot"], answer: 2, explanation: "享受，符合文意" },
+                        { id: 60, text: "25.", options: ["stay", "return", "leave", "remain"], answer: 2, explanation: "回來，符合文意" }
+                    ]},
+                     { title: "第四部分：閱讀測驗", passage: `
+                        <h4 class="font-bold text-lg mb-2">Passage 1: The Magic Pencil</h4>
+                        <div class="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border">
+                           <p>Lily loved to draw, but she often felt frustrated because her drawings never looked as good as she imagined. One sunny afternoon, while playing in her grandmother's attic, she found a peculiar pencil. It was old and wooden, with a tiny, shimmering star carved into its end. "A magic pencil!" she whispered. Curious, she picked it up and began to draw a cat. To her surprise, the cat on the paper seemed to blink and purr. Lily gasped! She tried drawing a flower, and the petals appeared to sway gently in an imaginary breeze.</p>
+                           <p>With the magic pencil, Lily drew all sorts of wonderful things: a flying bicycle that carried her over the city, a talking tree that shared ancient stories, and a bridge that led to a land of sweets. She shared her magical creations with her friends, who were always amazed. But Lily soon realized that the pencil only worked when she truly believed in the magic within her own imagination. If she doubted herself, the drawings would just be ordinary. The magic wasn't in the pencil itself, but in her confidence and boundless creativity.</p>
+                        </div>`, questions: [
+                        { id: 61, text: "What made the pencil peculiar?", options: ["It was made of plastic.", "It had a tiny, shimmering star carved into its end.", "It was very colorful.", "It was brand new."], answer: 2, explanation: "鉛筆的奇特之處在於尾端有顆閃亮的小星星雕刻。" },
+                        { id: 62, text: "What did Lily draw first with the magic pencil?", options: ["A flower.", "A flying bicycle.", "A cat.", "A talking tree."], answer: 3, explanation: "莉莉用魔法鉛筆首先畫了一隻貓。" },
+                        { id: 63, text: "Which of the following did Lily NOT draw with the magic pencil?", options: ["A bridge to a land of sweets.", "A talking tree.", "A real car.", "A flying bicycle."], answer: 3, explanation: "文章中沒有提到莉莉畫了一輛真正的汽車。" },
+                        { id: 64, text: "According to the passage, when did the pencil stop working magically?", options: ["When Lily drew bad things.", "When her friends saw her drawing.", "When she doubted her own imagination.", "When the weather was not sunny."], answer: 3, explanation: "當莉莉懷疑自己的想像力時，鉛筆就失去了魔力。" },
+                        { id: 65, text: "What is the main lesson of this story?", options: ["Magic pencils can help you draw well.", "It's important to keep your magic tools secret.", "True magic comes from believing in your own creativity.", "Attics are good places to find treasures."], answer: 3, explanation: "故事的主旨是真正的魔力來自於相信自己的創造力。" }
+                    ]},
+                    { title: "", passage: `
+                        <h4 class="font-bold text-lg mb-2 mt-6">Passage 2: Penguins in Danger</h4>
+                        <div class="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border">
+                           <p>Penguins are fascinating birds that live mostly in the Southern Hemisphere. While many people associate them with cold places like Antarctica, some species actually live in warmer areas, such as the Galápagos Islands near the equator. Penguins are flightless birds, meaning they cannot fly. Instead, they are excellent swimmers, using their strong flippers to "fly" through the water to catch fish and other small sea animals. Their black and white feathers act like a tuxedo, but they are actually very good camouflage in the water, helping them hide from predators and prey.</p>
+                           <p>Unfortunately, many penguin species are facing serious threats. Climate change is one of the biggest problems. Rising global temperatures cause ice to melt, which reduces their breeding grounds and makes it harder for them to find food. Overfishing also means less food for penguins. Pollution, especially oil spills, can damage their feathers, making it difficult for them to stay warm and waterproof. Conservation efforts are crucial to protect these amazing creatures and ensure their survival for future generations.</p>
+                        </div>`, questions: [
+                        { id: 66, text: "Where do most penguins live?", options: ["In the Northern Hemisphere.", "Only in Antarctica.", "In the Southern Hemisphere.", "Only in the Galápagos Islands."], answer: 3, explanation: "大多數企鵝生活在南半球。" },
+                        { id: 67, text: "What special ability do penguins have instead of flying?", options: ["They can run very fast.", "They are excellent swimmers.", "They can sing beautiful songs.", "They can climb trees."], answer: 2, explanation: "企鵝是出色的游泳者。" },
+                        { id: 68, text: "Why are penguins' black and white feathers helpful?", options: ["They look like a tuxedo for parties.", "They help them blend in underwater for camouflage.", "They keep them cool in warm weather.", "They attract other penguins."], answer: 2, explanation: "黑白羽毛有助於在水下偽裝。" },
+                        { id: 69, text: "Which of the following is NOT mentioned as a threat to penguins?", options: ["Climate change.", "Overfishing.", "Air pollution.", "Oil spills."], answer: 3, explanation: "文章未提及空氣污染是威脅。" },
+                        { id: 70, text: "What is the main idea of the second paragraph?", options: ["Penguins are very good at swimming.", "There are many types of penguins.", "Penguins are facing many threats and need protection.", "Climate change only affects animals in cold places."], answer: 3, explanation: "第二段的主旨是企鵝面臨威脅且需要保護。" }
+                    ]}
+                ]
+            },
+            // Test 3
+            {
+                title: "六年級英語能力挑戰評測 (三)",
+                sections: [
+                    { title: "第一部分：詞彙與應用", questions: [
+                        { id: 71, text: "My grandfather used to be a _______; he worked on a farm and grew many crops.", options: ["policeman", "farmer", "chef", "pilot"], answer: 2, explanation: "農夫 (farmer)"},
+                        { id: 72, text: "The city is very crowded, especially during _______ hour.", options: ["quiet", "fast", "traffic", "busy"], answer: 4, explanation: "忙碌的 (busy) - busy hour 是常用搭配"},
+                        { id: 73, text: "My father works in a _______, helping people save and borrow money.", options: ["post office", "hospital", "bank", "restaurant"], answer: 3, explanation: "銀行 (bank)"},
+                        { id: 74, text: "After playing outside for a long time, I felt very _______ and needed a rest.", options: ["hungry", "thirsty", "tired", "bored"], answer: 3, explanation: "疲累的 (tired)"},
+                        { id: 75, text: "On Chinese New Year’s Eve, families usually have a big _______ together.", options: ["lunch", "breakfast", "dinner", "snack"], answer: 3, explanation: "晚餐 (dinner)"},
+                        { id: 76, text: "The _______ told the story of the ancient kingdom.", options: ["quiz", "homework", "test", "story"], answer: 4, explanation: "故事 (story)"},
+                        { id: 77, text: "A _______ is a place where you can buy fresh vegetables, fruits, and meat.", options: ["bakery", "market", "shop", "factory"], answer: 2, explanation: "市場 (market)"},
+                        { id: 78, text: "The sky was _______ and dark, so we knew it was going to rain soon.", options: ["sunny", "clear", "cloudy", "bright"], answer: 3, explanation: "多雲的 (cloudy)"},
+                        { id: 79, text: "Please put the _______ on the box to seal it tightly.", options: ["paper", "glue", "tape", "marker"], answer: 3, explanation: "膠帶 (tape)"},
+                        { id: 80, text: "The teacher gave us a _______ because we all did well on the exam.", options: ["problem", "question", "prize", "lesson"], answer: 3, explanation: "獎品 (prize)"}
+                    ]},
+                    { title: "第二部分：文法與句型", questions: [
+                        { id: 81, text: "She _______ (be) a student in sixth grade this year.", options: ["is", "am", "are", "be"], answer: 1, explanation: "Be動詞單數現在式"},
+                        { id: 82, text: "A: What time _______ your English class start? B: It starts at 8:00.", options: ["do", "does", "is", "will"], answer: 2, explanation: "現在簡單式問句，主詞為單數"},
+                        { id: 83, text: "They _______ (study) for their math test when I called them.", options: ["are studying", "were studying", "study", "studied"], answer: 2, explanation: "過去進行式"},
+                        { id: 84, text: "The book _______ (which/that) I bought yesterday is very interesting.", options: ["who", "whose", "which", "where"], answer: 3, explanation: "關係代名詞，修飾事物"},
+                        { id: 85, text: "He _______ (live) in Taipei since 2010.", options: ["lives", "lived", "has lived", "is living"], answer: 3, explanation: "現在完成式，表示從過去持續到現在的動作"},
+                        { id: 86, text: "My mom _______ (get) me a new bike for my birthday.", options: ["give", "gets", "gave", "to get"], answer: 3, explanation: "授與動詞 'get' 過去式"},
+                        { id: 87, text: "I heard someone _______ the door.", options: ["knocks", "knocking", "knocked", "to knock"], answer: 2, explanation: "感官動詞 'hear' 後接 Ving 表示正在進行"},
+                        { id: 88, text: "You look _______ today. Are you okay?", options: ["happily", "sad", "sadly", "happiness"], answer: 2, explanation: "連綴動詞 'look' 後接形容詞"},
+                        { id: 89, text: "If I _______ (be) a bird, I would fly to the sky.", options: ["am", "was", "were", "will be"], answer: 3, explanation: "假設語氣，與現在事實相反的假設"},
+                        { id: 90, text: "He _______ (should) be here by now. Where is he?", options: ["should", "should to", "should be", "should have"], answer: 1, explanation: "情態助動詞後接原型動詞"}
+                    ]},
+                    { title: "第三部分：克漏字測驗", passage: `<p>Many people love to watch movies in a __21__. It’s a great __22__ to relax and enjoy a story on a big screen. Before the movie starts, you can buy popcorn and drinks. During the movie, it’s important to be __23__ and not talk loudly so everyone can enjoy it. Sometimes, movies can make you feel many different __24__, like happiness, sadness, or __25__.</p>`, questions: [
+                        { id: 91, text: "21.", options: ["restaurant", "theater", "gym", "library"], answer: 2, explanation: "戲院 (theater)"},
+                        { id: 92, text: "22.", options: ["way", "thing", "chance", "problem"], answer: 1, explanation: "方式 (way)"},
+                        { id: 93, text: "23.", options: ["noisy", "quiet", "talkative", "active"], answer: 2, explanation: "安靜的 (quiet)"},
+                        { id: 94, text: "24.", options: ["things", "actions", "emotions", "habits"], answer: 3, explanation: "情感 (emotions)"},
+                        { id: 95, text: "25.", options: ["angry", "surprised", "tired", "excited"], answer: 2, explanation: "驚訝的 (surprised)"}
+                    ]},
+                    { title: "第四部分：閱讀測驗", passage: `
+                        <h4 class="font-bold text-lg mb-2">Passage 1: The Boy Who Could See Sounds</h4>
+                        <div class="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border">
+                           <p>Leo was an ordinary boy in many ways, but he had a unique gift: he could see sounds. Not just hear them, but actually see them as colors and shapes floating in the air. A loud laugh would appear as a burst of bright yellow, while a soft whisper might be a gentle blue swirl. Music was a kaleidoscope of vibrant patterns, dancing and weaving around him.</p>
+                           <p>This gift, however, was also a challenge. Crowded places like the market were overwhelming, filled with a chaotic mess of colors from countless voices and noises. School was difficult too; the teacher's voice was a steady green line, but the rustle of papers or the scrape of chairs created distracting flashes. Leo found peace in quiet places, especially in nature. The chirping of birds was a delicate melody of orange dots, and the flowing river was a calm, flowing silver ribbon.</p>
+                           <p>One day, his music teacher, Mrs. Chen, noticed Leo covering his eyes during a lively band practice. When he explained his gift, Mrs. Chen understood. She taught him to focus on specific sounds, turning the chaos into harmony. With her help, Leo learned to "paint" with sounds, using his unique vision to create beautiful visual compositions that matched the music. His gift, once a burden, became a source of incredible artistic expression.</p>
+                        </div>`, questions: [
+                        { id: 96, text: "What was Leo's unique gift?", options: ["He could hear colors.", "He could see sounds as colors and shapes.", "He could play any musical instrument.", "He could talk to animals."], answer: 2, explanation: "他能將聲音看成顏色和形狀。"},
+                        { id: 97, text: "How did a loud laugh appear to Leo?", options: ["A gentle blue swirl.", "A steady green line.", "A burst of bright yellow.", "A delicate melody of orange dots."], answer: 3, explanation: "大笑會呈現為一陣亮黃色。"},
+                        { id: 98, text: "Why were crowded places difficult for Leo?", options: ["They were too noisy to hear anything.", "They were too quiet and boring.", "They were filled with a chaotic mess of colors from sounds.", "He couldn't find his way in them."], answer: 3, explanation: "擁擠的地方充滿了來自聲音的混亂色彩。"},
+                        { id: 99, text: "Who helped Leo learn to control his gift?", options: ["His parents.", "His friends.", "His music teacher, Mrs. Chen.", "His classmates."], answer: 3, explanation: "他的音樂老師陳太太幫助了他。"},
+                        { id: 100, text: "What did Leo's gift become in the end?", options: ["A burden.", "A source of artistic expression.", "A secret he kept from everyone.", "A way to make new friends."], answer: 2, explanation: "他的天賦最終成為一種藝術表達的來源。"}
+                    ]},
+                    { title: "", passage: `
+                        <h4 class="font-bold text-lg mb-2 mt-6">Passage 2: The History of Chocolate</h4>
+                        <div class="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border">
+                           <p>Chocolate, a beloved treat worldwide, has a rich and long history. It originated in Mesoamerica (modern-day Mexico and Central America) thousands of years ago. The Olmec, Maya, and Aztec civilizations were among the first to cultivate cacao trees, which produce the beans from which chocolate is made.</p>
+                           <p>Early chocolate was not a sweet candy. It was consumed as a bitter, frothy drink, often mixed with chili peppers, cornmeal, and other spices. It was used in rituals, as medicine, and even as currency because cacao beans were considered very valuable. Only nobles and warriors were allowed to drink it regularly.</p>
+                           <p>In the 16th century, Spanish explorers brought cacao beans and the chocolate drink back to Europe. At first, Europeans added sugar and honey to make it sweeter, transforming it into a popular beverage among the wealthy. Later, in the 19th century, new techniques were developed to create solid chocolate bars, making it more accessible to everyone. Today, chocolate is enjoyed in countless forms, from bars to drinks, all over the world.</p>
+                        </div>`, questions: [
+                        { id: 101, text: "Where did chocolate originate?", options: ["Europe.", "North America.", "Mesoamerica.", "Asia."], answer: 3, explanation: "巧克力起源於中美洲。"},
+                        { id: 102, text: "What was early chocolate consumed as?", options: ["A sweet candy bar.", "A bitter, frothy drink.", "A spicy soup.", "A type of bread."], answer: 2, explanation: "早期的巧克力是一種帶苦味的泡沫飲料。"},
+                        { id: 103, text: "How was cacao used by early civilizations besides being a drink?", options: ["As a building material.", "As a type of clothing.", "As currency.", "As a pet."], answer: 3, explanation: "可可豆曾被用作貨幣。"},
+                        { id: 104, text: "When did Spanish explorers bring cacao back to Europe?", options: ["In the 15th century.", "In the 16th century.", "In the 19th century.", "In the 20th century."], answer: 2, explanation: "西班牙探險家在16世紀將可可帶回歐洲。"},
+                        { id: 105, text: "What is the main topic of this passage?", options: ["How to make chocolate.", "The different types of chocolate today.", "The history and evolution of chocolate.", "The importance of cacao beans as currency."], answer: 3, explanation: "本文的主題是巧克力的歷史與演變。"}
+                    ]}
+                ]
+            },
+            // Test 4
+            {
+                title: "六年級英語能力挑戰評測 (四)",
+                sections: [
+                    { title: "第一部分：詞彙與應用", questions: [
+                        { id: 106, text: "A _______ is a person who helps patients in a hospital, often working with doctors.", options: ["dentist", "nurse", "secretary", "teacher"], answer: 2, explanation: "護士 (nurse)"},
+                        { id: 107, text: "My uncle is a _______; he sells cars at a big car dealership.", options: ["mailman", "reporter", "salesman", "worker"], answer: 3, explanation: "售貨員 (salesman)"},
+                        { id: 108, text: "On _______, children dress up in costumes and go trick-or-treating.", options: ["Christmas", "Easter", "Halloween", "Lantern Festival"], answer: 3, explanation: "萬聖節 (Halloween)"},
+                        { id: 109, text: "The _______ told the sad story of the little mouse that lost its way.", options: ["question", "problem", "story", "example"], answer: 3, explanation: "故事 (story)"},
+                        { id: 110, text: "If you want to send a letter, you should go to the _______.", options: ["bank", "bookstore", "post office", "police station"], answer: 3, explanation: "郵局 (post office)"},
+                        { id: 111, text: "The sun was _______ brightly in the sky, making it a perfect day for a picnic.", options: ["raining", "shining", "blowing", "snowing"], answer: 2, explanation: "照耀 (shining)"},
+                        { id: 112, text: "The little boy was _______ of the dark, so he always slept with a night light.", options: ["brave", "happy", "afraid", "excited"], answer: 3, explanation: "害怕的 (afraid)"},
+                        { id: 113, text: "I need a _______ of paper to write a letter to my friend.", options: ["pack", "bottle", "piece", "cup"], answer: 3, explanation: "一片/張 (piece)"},
+                        { id: 114, text: "This _______ is too sharp; be careful when you use it.", options: ["ruler", "pencil", "knife", "eraser"], answer: 3, explanation: "刀子 (knife)"},
+                        { id: 115, text: "The _______ was so loud that I couldn't hear what my friend was saying.", options: ["music", "noise", "voice", "sound"], answer: 2, explanation: "噪音 (noise)"}
+                    ]},
+                    { title: "第二部分：文法與句型", questions: [
+                        { id: 116, text: "She _______ (have) long hair.", options: ["has", "have", "is", "are"], answer: 1, explanation: "擁有，主詞為單數"},
+                        { id: 117, text: "A: Is he playing soccer? B: No, he _______.", options: ["isn’t playing", "doesn’t play", "isn’t", "doesn’t"], answer: 3, explanation: "現在進行式簡答"},
+                        { id: 118, text: "They _______ (go) to the zoo next Sunday.", options: ["go", "went", "are going", "will be going"], answer: 3, explanation: "未來進行式或be going to表示計畫"},
+                        { id: 119, text: "My mother, _______ (who/that) is a teacher, loves reading books.", options: ["who", "whose", "which", "where"], answer: 1, explanation: "關係代名詞，修飾人且為非限定子句"},
+                        { id: 120, text: "I _______ (know) her for five years.", options: ["knew", "have known", "know", "am knowing"], answer: 2, explanation: "現在完成式，表示持續的狀態"},
+                        { id: 121, text: "The teacher _______ the students clean the classroom.", options: ["allows", "lets", "makes", "helps"], answer: 3, explanation: "使役動詞 'make' 後接原型動詞"},
+                        { id: 122, text: "I heard the birds _______ beautifully outside my window.", options: ["sang", "singing", "sings", "to sing"], answer: 2, explanation: "感官動詞 'hear' 後接 Ving 表示正在進行"},
+                        { id: 123, text: "He seemed _______ after hearing the good news.", options: ["happily", "happy", "sadness", "angry"], answer: 2, explanation: "連綴動詞 'seem' 後接形容詞"},
+                        { id: 124, text: "If it _______ (not/rain) tomorrow, we will go for a picnic.", options: ["doesn’t rain", "didn’t rain", "won’t rain", "isn’t raining"], answer: 1, explanation: "條件句的現在簡單式"},
+                        { id: 125, text: "You _______ (finish) your homework before watching TV.", options: ["must", "had better", "should", "all of the above"], answer: 4, explanation: "should, must, had better 都表示建議或義務"}
+                    ]},
+                    { title: "第三部分：克漏字測驗", passage: `<p>Last week, our class went on a field trip to the __21__ in the city. There were many interesting animals, like lions, tigers, and even a big elephant. We saw a monkey __22__ from tree to tree, and a bear __23__ in the water. Everyone was very __24__ to see all the animals up close. We learned a lot about their lives and how to __25__ them.</p>`, questions: [
+                        { id: 126, text: "21.", options: ["park", "zoo", "museum", "factory"], answer: 2, explanation: "動物園 (zoo)"},
+                        { id: 127, text: "22.", options: ["running", "jumping", "flying", "swimming"], answer: 2, explanation: "跳躍 (jumping)"},
+                        { id: 128, text: "23.", options: ["swim", "swam", "swimming", "to swim"], answer: 3, explanation: "游泳 (swimming)"},
+                        { id: 129, text: "24.", options: ["sad", "bored", "excited", "tired"], answer: 3, explanation: "興奮的 (excited)"},
+                        { id: 130, text: "25.", options: ["understand", "help", "teach", "ignore"], answer: 2, explanation: "幫助 (help)"}
+                    ]},
+                    { title: "第四部分：閱讀測驗", passage: `
+                        <h4 class="font-bold text-lg mb-2">Passage 1: The Inventor's Secret Workshop</h4>
+                        <div class="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border">
+                           <p>Mr. Finch was known in his small town as an eccentric inventor. He lived in an old house with a large, overgrown garden, and everyone whispered about the strange noises and flashes of light that came from his back workshop at night. Children often dared each other to peek through the fence, but no one ever saw anything clearly.</p>
+                           <p>One rainy Saturday, a curious young girl named Maya, who dreamed of being an inventor herself, decided to approach Mr. Finch's gate. She knocked timidly. To her surprise, the door opened, and Mr. Finch, with grease on his glasses and a friendly smile, invited her in. Inside, the workshop was a marvel! Gears whirred, colorful wires tangled on tables, and half-finished gadgets lay everywhere. He showed her a device that could translate animal sounds into human speech and another that could make plants grow instantly.</p>
+                           <p>Mr. Finch explained that his secret wasn't magic, but hard work, imagination, and not being afraid to make mistakes. "Every failed attempt," he said, "is a step closer to success." Maya spent the entire afternoon learning from him, feeling inspired. From that day on, the noises from the workshop no longer seemed strange, but exciting, like the sounds of dreams coming true.</p>
+                        </div>`, questions: [
+                        { id: 131, text: "What was Mr. Finch known as in his town?", options: ["A musician.", "An eccentric inventor.", "A quiet neighbor.", "A gardener."], answer: 2, explanation: "他在鎮上被稱為古怪的發明家。"},
+                        { id: 132, text: "What did children often do regarding Mr. Finch's workshop?", options: ["They played inside it.", "They dared each other to peek through the fence.", "They tried to fix his gadgets.", "They brought him food."], answer: 2, explanation: "孩子們常互相挑戰去看圍欄後面。"},
+                        { id: 133, text: "What was Maya's dream?", options: ["To be a gardener.", "To be a musician.", "To be an inventor.", "To be a teacher."], answer: 3, explanation: "瑪雅的夢想是成為一名發明家。"},
+                        { id: 134, text: "Which of the following devices did Mr. Finch NOT show Maya?", options: ["A device that could translate animal sounds.", "A device that could make plants grow instantly.", "A device that could make him invisible.", "The passage doesn't specify which ones he showed."], answer: 3, explanation: "文章未提及能讓他隱形的設備。"},
+                        { id: 135, text: "What was Mr. Finch's secret to inventing, according to him?", options: ["Using magic.", "Only working at night.", "Hard work, imagination, and not being afraid to make mistakes.", "Buying expensive tools."], answer: 3, explanation: "他的秘訣是努力、想像力且不怕犯錯。"}
+                    ]},
+                    { title: "", passage: `
+                        <h4 class="font-bold text-lg mb-2 mt-6">Passage 2: The Importance of Sleep</h4>
+                        <div class="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border">
+                           <p>Sleep is something we all do, but it's much more than just resting. It's a vital activity for our bodies and minds to stay healthy and work well. When we sleep, our bodies repair themselves. Our muscles grow, and our cells heal. Our brains also process information from the day, consolidating memories and getting ready for the next day's learning.</p>
+                           <p>Not getting enough sleep can lead to many problems. You might feel tired and grumpy, have trouble focusing at school, or even get sick more often. Children especially need a lot of sleep because their bodies and brains are still developing. Experts recommend that school-aged children get 9-11 hours of sleep per night.</p>
+                           <p>To get good sleep, it's helpful to have a regular bedtime, make your bedroom dark and quiet, and avoid screens like phones or tablets right before bed. A healthy diet and regular exercise also contribute to better sleep. Remember, a good night's sleep is like charging your batteries for a new day!</p>
+                        </div>`, questions: [
+                        { id: 136, text: "What happens to our bodies when we sleep?", options: ["They get hungry.", "They repair themselves and muscles grow.", "They play video games.", "They stay awake."], answer: 2, explanation: "睡眠時身體會進行修復，肌肉會生長。"},
+                        { id: 137, text: "What do our brains do during sleep?", options: ["They watch TV shows.", "They process information and consolidate memories.", "They dream about food.", "They stop working completely."], answer: 2, explanation: "大腦會處理資訊並鞏固記憶。"},
+                        { id: 138, text: "How much sleep do experts recommend for school-aged children per night?", options: ["5-7 hours.", "7-9 hours.", "9-11 hours.", "11-13 hours."], answer: 3, explanation: "專家建議學齡兒童每晚睡眠9-11小時。"},
+                        { id: 139, text: "Which of the following is NOT suggested for getting good sleep?", options: ["Having a regular bedtime.", "Making your bedroom dark and quiet.", "Using phones or tablets right before bed.", "Having a healthy diet."], answer: 3, explanation: "睡前使用手機或平板不利於睡眠。"},
+                        { id: 140, text: "What is the main idea of this passage?", options: ["How to stay awake for a long time.", "The importance of eating healthy food.", "The benefits of exercise.", "The importance and benefits of sleep."], answer: 4, explanation: "本文的主旨是睡眠的重要性與好處。"}
+                    ]}
+                ]
+            },
+            // Test 5
+            {
+                title: "六年級英語能力挑戰評測 (五)",
+                sections: [
+                    { title: "第一部分：詞彙與應用", questions: [
+                        { id: 141, text: "My brother wants to be a _______ when he grows up, so he studies hard at school.", options: ["worker", "singer", "writer", "soldier"], answer: 3, explanation: "作家 (writer)"},
+                        { id: 142, text: "The traffic light turned green, so the cars started to _______.", options: ["stop", "move", "park", "wait"], answer: 2, explanation: "移動 (move)"},
+                        { id: 143, text: "I lost my _______, so I couldn't open the door.", options: ["box", "key", "ruler", "pencil"], answer: 2, explanation: "鑰匙 (key)"},
+                        { id: 144, text: "My favorite _______ is summer because I love swimming at the beach.", options: ["season", "weather", "holiday", "festival"], answer: 1, explanation: "季節 (season)"},
+                        { id: 145, text: "After the accident, the injured man felt a lot of _______ in his leg.", options: ["joy", "interest", "pain", "fun"], answer: 3, explanation: "疼痛 (pain)"},
+                        { id: 146, text: "The _______ was delicious, made with fresh vegetables and chicken.", options: ["hamburger", "sandwich", "soup", "pizza"], answer: 3, explanation: "湯 (soup)"},
+                        { id: 147, text: "The little girl gave her mother a beautiful red _______ for her birthday.", options: ["rock", "rope", "rose", "robot"], answer: 3, explanation: "玫瑰 (rose)"},
+                        { id: 148, text: "I need to buy a new _______ for my computer because the old one is broken.", options: ["keyboard", "screen", "mouse", "monitor"], answer: 3, explanation: "滑鼠 (mouse)"},
+                        { id: 149, text: "He received an important _______ from his company.", options: ["news", "mail", "meeting", "message"], answer: 4, explanation: "信息 (message)"},
+                        { id: 150, text: "The _______ was so clear that we could see many stars at night.", options: ["cloud", "sky", "sun", "moon"], answer: 2, explanation: "天空 (sky)"}
+                    ]},
+                    { title: "第二部分：文法與句型", questions: [
+                        { id: 151, text: "She _______ (be) happy when she heard the good news.", options: ["is", "am", "was", "are"], answer: 3, explanation: "Be動詞過去式"},
+                        { id: 152, text: "A: What are you _______? B: I’m drawing a picture.", options: ["doing", "do", "does", "did"], answer: 1, explanation: "現在進行式問句"},
+                        { id: 153, text: "My parents _______ (visit) their friends last weekend.", options: ["visit", "visits", "visited", "are visiting"], answer: 3, explanation: "過去式動詞"},
+                        { id: 154, text: "The restaurant _______ (where/that) we had dinner last night was very famous.", options: ["which", "who", "where", "what"], answer: 3, explanation: "關係副詞，修飾地點"},
+                        { id: 155, text: "They _______ (not/eat) dinner yet. They are still hungry.", options: ["didn’t eat", "haven’t eaten", "don’t eat", "aren’t eating"], answer: 2, explanation: "現在完成式，表示動作未發生"},
+                        { id: 156, text: "My teacher _______ me stay after class to finish my work.", options: ["makes", "lets", "helps", "tells"], answer: 2, explanation: "使役動詞 'let' 後接原型動詞"},
+                        { id: 157, text: "I felt the ground _______ under my feet.", options: ["shake", "shaking", "shook", "to shake"], answer: 1, explanation: "感官動詞 'feel' 後接原型動詞"},
+                        { id: 158, text: "The story sounds _______. Tell me more!", options: ["interesting", "interested", "interestingly", "interest"], answer: 1, explanation: "連綴動詞 'sound' 後接形容詞"},
+                        { id: 159, text: "If she _______ (study) harder, she will pass the test.", options: ["studies", "studied", "will study", "is studying"], answer: 1, explanation: "條件句的現在簡單式，主詞為單數"},
+                        { id: 160, text: "You _______ (not/worry) about me; I can take care of myself.", options: ["don’t worry", "not worry", "shouldn’t worry", "aren’t worry"], answer: 3, explanation: "情態助動詞否定句"}
+                    ]},
+                    { title: "第三部分：克漏字測驗", passage: `<p>I love reading comic books. I have many comic books __21__ home. My favorite comic book is about a superhero __22__ can fly and has super strength. Every day after school, I __23__ my homework and then I read my comic books. I can read for hours __24__ getting bored. I think reading comic books is more __25__ than watching TV.</p>`, questions: [
+                        { id: 161, text: "21.", options: ["in", "at", "on", "for"], answer: 2, explanation: "地點介系詞 at home"},
+                        { id: 162, text: "22.", options: ["who", "which", "whom", "whose"], answer: 1, explanation: "關係代名詞，修飾人"},
+                        { id: 163, text: "23.", options: ["do", "does", "doing", "did"], answer: 1, explanation: "做作業用 do homework"},
+                        { id: 164, text: "24.", options: ["so", "but", "without", "because"], answer: 3, explanation: "介系詞，表示沒有"},
+                        { id: 165, text: "25.", options: ["tiring", "boring", "exciting", "sad"], answer: 3, explanation: "令人興奮的 (exciting)"}
+                    ]},
+                    { title: "第四部分：閱讀測驗", passage: `
+                        <h4 class="font-bold text-lg mb-2">Passage 1: The First Robot</h4>
+                        <div class="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border">
+                           <p>For centuries, humans have dreamed of creating machines that could think and act like people. In ancient Greece, engineers built automata (self-operating machines) for entertainment. However, the concept of a "robot" as we know it is much newer.</p>
+                           <p>The word "robot" first appeared in a 1920 Czech play called "R.U.R." by Karel Čapek. In the play, robots were artificial beings designed to work for humans, but they eventually rebelled. The word comes from the Czech word "robota," meaning "forced labor."</p>
+                           <p>The first actual robot, in the modern sense, was developed in the 1950s by George Devol. It was called "Unimate" and was used in factories to do dangerous or repetitive tasks, such as welding and lifting heavy objects. Unimate was a large, stationary arm, not a human-like figure, but it marked the beginning of industrial robotics. Since then, robots have become more advanced, capable of performing complex tasks, helping in hospitals, exploring other planets, and even engaging in human-like conversations. The future of robotics continues to evolve rapidly.</p>
+                        </div>`, questions: [
+                        { id: 166, text: "What were \"automata\" in ancient Greece used for?", options: ["Warfare.", "Entertainment.", "Building houses.", "Space exploration."], answer: 2, explanation: "古希臘的自動機主要用於娛樂。"},
+                        { id: 167, text: "Who wrote the play \"R.U.R.\" where the word \"robot\" first appeared?", options: ["George Devol.", "An ancient Greek engineer.", "Karel Čapek.", "The passage doesn't say."], answer: 3, explanation: "卡雷爾·恰佩克寫了劇本《R.U.R.》。"},
+                        { id: 168, text: "What does the Czech word \"robota\" mean?", options: ["Free time.", "Forced labor.", "New technology.", "Smart machine."], answer: 2, explanation: "捷克語 'robota' 的意思是「強制勞動」。"},
+                        { id: 169, text: "What was the name of the first actual modern robot?", options: ["R.U.R.", "Karel.", "Unimate.", "George."], answer: 3, explanation: "第一個現代機器人名為 'Unimate'。"},
+                        { id: 170, text: "Which of the following is NOT mentioned as a task modern robots can do?", options: ["Helping in hospitals.", "Playing sports professionally.", "Exploring other planets.", "Engaging in human-like conversations."], answer: 2, explanation: "文章未提及現代機器人能專業地進行體育運動。"}
+                    ]},
+                    { title: "", passage: `
+                        <h4 class="font-bold text-lg mb-2 mt-6">Passage 2: The Mystery of the Bermuda Triangle</h4>
+                        <div class="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg border">
+                           <p>The Bermuda Triangle, also known as the Devil's Triangle, is a mysterious area in the western part of the North Atlantic Ocean. It is roughly triangular, with its points at Bermuda, Florida, and Puerto Rico. For centuries, this region has been famous for the unexplained disappearance of ships and airplanes. Many theories have been proposed to explain these mysteries.</p>
+                           <p>Some people believe that supernatural forces are at work, perhaps even aliens or a lost city like Atlantis. Others suggest that strange magnetic fields in the area interfere with navigation equipment, causing vessels to get lost. Environmental explanations are also common, pointing to the unpredictable weather, strong ocean currents, and deep underwater trenches. Methane gas eruptions from the seabed have also been suggested as a cause, as they could sink ships very quickly.</p>
+                           <p>Despite the many theories and popular stories, official reports and researchers often state that the number of disappearances in the Bermuda Triangle is not significantly higher than in other busy ocean areas. They attribute many incidents to human error, severe weather, or faulty equipment, just like accidents anywhere else. However, the mystery continues to fascinate people worldwide.</p>
+                        </div>`, questions: [
+                        { id: 171, text: "Where is the Bermuda Triangle located?", options: ["In the Pacific Ocean.", "In the Indian Ocean.", "In the North Atlantic Ocean.", "In the Southern Ocean."], answer: 3, explanation: "百慕達三角位於北大西洋。"},
+                        { id: 172, text: "Which of the following is NOT one of the points of the Bermuda Triangle mentioned in the passage?", options: ["Bermuda.", "Florida.", "New York.", "Puerto Rico."], answer: 3, explanation: "紐約不是百慕達三角的端點之一。"},
+                        { id: 173, text: "What do some people believe causes the disappearances in the Bermuda Triangle?", options: ["Perfectly calm weather.", "Clear navigation signals.", "Supernatural forces or strange magnetic fields.", "Easy-to-find landmarks."], answer: 3, explanation: "一些人認為是超自然力量或奇特磁場造成。"},
+                        { id: 174, text: "Which environmental factor is NOT mentioned as a possible cause?", options: ["Unpredictable weather.", "Strong ocean currents.", "Shallow waters.", "Methane gas eruptions."], answer: 3, explanation: "文章未提及淺水區是可能原因。"},
+                        { id: 175, text: "What do official reports and researchers often state about the disappearances?", options: ["They are all caused by aliens.", "The number is much higher than anywhere else.", "Many incidents are due to human error, severe weather, or faulty equipment.", "The mystery has been completely solved."], answer: 3, explanation: "官方報告常將事件歸因於人為錯誤、惡劣天氣或設備故障。"}
+                    ]}
+                ]
+            }
+        ];
+
+        // --- STATE ---
+        let currentTestIndex = null;
+        const userAnswers = {};
+
+        // --- DOM Elements ---
+        const app = document.getElementById('app');
+        const selectionView = document.getElementById('selection-view');
+        const testView = document.getElementById('test-view');
+        const resultsView = document.getElementById('results-view');
+        
+        const mainTitle = document.getElementById('main-title');
+        const mainSubtitle = document.getElementById('main-subtitle');
+        const testList = document.getElementById('test-list');
+        const testContainer = document.getElementById('test-container');
+        const answersBreakdown = document.getElementById('answers-breakdown');
+        
+        const submitBtn = document.getElementById('submit-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const backToSelectionBtn = document.getElementById('back-to-selection-btn');
+        
+        // --- Functions ---
+        
+        function showView(viewToShow) {
+            selectionView.classList.add('hidden');
+            testView.classList.add('hidden');
+            resultsView.classList.add('hidden');
+            
+            if (viewToShow === 'selection') {
+                selectionView.classList.remove('hidden');
+                mainTitle.textContent = '六年級英語能力挑戰評測';
+                mainSubtitle.textContent = '請選擇一份試卷開始作答';
+            } else if (viewToShow === 'test') {
+                testView.classList.remove('hidden');
+                mainTitle.textContent = allTestsData[currentTestIndex].title;
+                mainSubtitle.textContent = '線上作答與即時訂正';
+            } else if (viewToShow === 'results') {
+                resultsView.classList.remove('hidden');
+                mainTitle.textContent = allTestsData[currentTestIndex].title;
+                mainSubtitle.textContent = '測驗結果與詳解';
+            }
+        }
+
+        function renderTestSelection() {
+            testList.innerHTML = '';
+            allTestsData.forEach((test, index) => {
+                const card = document.createElement('div');
+                card.className = 'test-selection-card bg-white p-6 rounded-lg shadow-md cursor-pointer border-l-blue-500';
+                card.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="bg-blue-100 text-blue-600 rounded-full h-12 w-12 flex items-center justify-center mr-4">
+                            <i class="fas fa-file-alt fa-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-xl">${test.title}</h3>
+                            <p class="text-gray-500">${test.sections.flatMap(s => s.questions).length} 題</p>
+                        </div>
+                         <i class="fas fa-chevron-right text-gray-400 ml-auto"></i>
+                    </div>
+                `;
+                card.addEventListener('click', () => startTest(index));
+                testList.appendChild(card);
+            });
+        }
+        
+        function startTest(index) {
+            currentTestIndex = index;
+            // Clear previous answers
+            for (const key in userAnswers) {
+                delete userAnswers[key];
+            }
+            renderTest();
+            showView('test');
+            window.scrollTo(0, 0);
+        }
+
+        function renderTest() {
+            const testData = allTestsData[currentTestIndex];
+            testContainer.innerHTML = ''; // Clear previous content
+            testData.sections.forEach(section => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'mb-12';
+
+                if (section.title) {
+                    sectionDiv.innerHTML += `<h2 class="text-2xl font-bold border-b-2 border-blue-500 pb-2 mb-6">${section.title}</h2>`;
+                }
+                
+                if (section.passage) {
+                    sectionDiv.innerHTML += `<div class="mb-6 bg-white p-6 rounded-2xl shadow-sm">${section.passage}</div>`;
+                }
+
+                section.questions.forEach(q => {
+                    sectionDiv.innerHTML += createQuestionHTML(q);
+                });
+                testContainer.appendChild(sectionDiv);
+            });
+            
+            // Add event listeners after rendering
+            testData.sections.forEach(section => {
+                section.questions.forEach(q => {
+                     document.getElementsByName(`q${q.id}`).forEach(radio => {
+                        radio.addEventListener('change', (e) => {
+                            userAnswers[q.id] = parseInt(e.target.value);
+                        });
+                    });
+                });
+            });
+        }
+
+        function createQuestionHTML(q, isResult = false) {
+            const testData = allTestsData[currentTestIndex];
+            const isCorrect = isResult && userAnswers[q.id] === q.answer;
+            const isIncorrect = isResult && userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.answer;
+
+            let cardClasses = 'question-card bg-white p-6 rounded-2xl shadow-sm mb-4';
+            if (isCorrect) cardClasses += ' correct';
+            if (isIncorrect) cardClasses += ' incorrect';
+            
+            const optionLetters = ['A', 'B', 'C', 'D'];
+            const optionsHTML = q.options.map((option, index) => {
+                const optionId = index + 1;
+                const isChecked = userAnswers[q.id] === optionId;
+                const isCorrectAnswer = q.answer === optionId;
+                
+                let labelClasses = 'option-label flex items-center p-3 rounded-lg border border-gray-200 cursor-pointer';
+                let resultIcon = '';
+
+                if (isResult) {
+                     labelClasses += ' cursor-default';
+                    if (isCorrectAnswer) {
+                        labelClasses += ' bg-green-100 border-green-400 font-bold text-green-800';
+                        resultIcon = `<i class="fas fa-check text-green-600 ml-auto"></i>`;
+                    } else if (isChecked && !isCorrectAnswer) {
+                        labelClasses += ' bg-red-100 border-red-400 text-red-800';
+                        resultIcon = `<i class="fas fa-times text-red-600 ml-auto"></i>`;
+                    }
+                }
+                
+                return `
+                    <div class="my-2">
+                        <input type="radio" id="q${q.id}_o${optionId}" name="q${q.id}" value="${optionId}" class="hidden" ${isResult ? 'disabled' : ''} ${isChecked ? 'checked' : ''}>
+                        <label for="q${q.id}_o${optionId}" class="${labelClasses}">
+                            <span class="w-6 h-6 flex items-center justify-center border-2 rounded-full mr-4 font-mono text-sm ${isChecked ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-400'}">
+                                ${optionLetters[index]}
+                            </span>
+                            <span class="flex-grow">${option}</span>
+                            ${resultIcon}
+                        </label>
+                    </div>
+                `;
+            }).join('');
+            
+            const explanationHTML = isResult ? `
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                     <p class="text-sm text-gray-500 mb-1">
+                        你的答案: <span class="font-bold ${isCorrect ? 'text-green-700' : 'text-red-700'}">${userAnswers[q.id] ? `${optionLetters[userAnswers[q.id] - 1]}. ${q.options[userAnswers[q.id] - 1]}` : '未作答'}</span>
+                     </p>
+                    <p class="text-sm text-gray-500 mb-2">
+                        正確答案: <span class="font-bold text-green-700">${optionLetters[q.answer - 1]}. ${q.options[q.answer - 1]}</span>
+                    </p>
+                    <p class="text-sm text-blue-800 bg-blue-50 p-3 rounded-lg"><i class="fas fa-lightbulb mr-2"></i>${q.explanation}</p>
+                </div>
+            ` : '';
+
+            const questionText = q.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            return `
+                <div id="question-${q.id}" class="${cardClasses}">
+                    <p class="font-bold text-lg mb-4">${q.id}. ${questionText}</p>
+                    <div>${optionsHTML}</div>
+                    ${explanationHTML}
+                </div>
+            `;
+        }
+        
+        function renderResults() {
+            const testData = allTestsData[currentTestIndex];
+            let correctCount = 0;
+            const allQuestions = testData.sections.flatMap(s => s.questions);
+            allQuestions.forEach(q => {
+                if (userAnswers[q.id] === q.answer) {
+                    correctCount++;
+                }
+            });
+
+            const totalQuestions = allQuestions.length;
+            const scoreValue = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+
+            document.getElementById('score').textContent = `${scoreValue}`;
+            document.getElementById('score-text').textContent = `答對 ${correctCount} / ${totalQuestions} 題`;
+
+            answersBreakdown.innerHTML = ''; // Clear previous results
+            testData.sections.forEach(section => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'mb-12';
+                if (section.title) {
+                    sectionDiv.innerHTML += `<h2 class="text-2xl font-bold border-b-2 border-blue-500 pb-2 mb-6">${section.title}</h2>`;
+                }
+                if (section.passage) {
+                    sectionDiv.innerHTML += `<div class="mb-6 bg-white p-6 rounded-2xl shadow-sm">${section.passage}</div>`;
+                }
+                section.questions.forEach(q => {
+                    sectionDiv.innerHTML += createQuestionHTML(q, true);
+                });
+                answersBreakdown.appendChild(sectionDiv);
+            });
+            showView('results');
+            window.scrollTo(0, 0);
+        }
+        
+        function goHome() {
+            currentTestIndex = null;
+            showView('selection');
+            window.scrollTo(0, 0);
+        }
+
+        // --- Event Listeners ---
+        submitBtn.addEventListener('click', () => {
+             const allQuestions = allTestsData[currentTestIndex].sections.flatMap(s => s.questions);
+             const answeredCount = Object.keys(userAnswers).length;
+             
+             if (answeredCount < allQuestions.length) {
+                 if (!confirm(`您還有 ${allQuestions.length - answeredCount} 題未作答，確定要提交嗎？`)) {
+                     return;
+                 }
+             }
+            renderResults();
+        });
+        
+        resetBtn.addEventListener('click', goHome);
+        backToSelectionBtn.addEventListener('click', goHome);
+        
+        // --- Initial Render ---
+        window.onload = () => {
+            renderTestSelection();
+            showView('selection');
+        };
+
+    </script>
+</body>
+</html>
