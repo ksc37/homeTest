@@ -26,7 +26,12 @@
             transition: all 0.2s ease-in-out;
         }
         .option-label:hover {
-            background-color: #ebf8ff; /* light blue */
+            background-color: #ebf8ff; /* light blue on hover */
+        }
+        /* Style for the selected answer during the test */
+        .selected-answer {
+            background-color: #ebf8ff; /* blue-100 */
+            border-color: #4299e1 !important; /* blue-500 */
         }
         .correct {
             border-left-color: #38a169; /* green-600 */
@@ -518,9 +523,23 @@
             // Add event listeners after rendering
             testData.sections.forEach(section => {
                 section.questions.forEach(q => {
-                     document.getElementsByName(`q${q.id}`).forEach(radio => {
+                     const radios = document.getElementsByName(`q${q.id}`);
+                     radios.forEach(radio => {
                         radio.addEventListener('change', (e) => {
+                            // Update the data model
                             userAnswers[q.id] = parseInt(e.target.value);
+                            
+                            // NEW: Update UI to show selection
+                            // 1. Remove selection style from all options in the same question group
+                            radios.forEach(r => {
+                                document.querySelector(`label[for="${r.id}"]`).classList.remove('selected-answer');
+                            });
+
+                            // 2. Add selection style to the clicked label
+                            const selectedLabel = document.querySelector(`label[for="${e.target.id}"]`);
+                            if (selectedLabel) {
+                                selectedLabel.classList.add('selected-answer');
+                            }
                         });
                     });
                 });
@@ -542,7 +561,12 @@
                 const isChecked = userAnswers[q.id] === optionId;
                 const isCorrectAnswer = q.answer === optionId;
                 
-                let labelClasses = 'option-label flex items-center p-3 rounded-lg border border-gray-200 cursor-pointer';
+                let labelClasses = 'option-label flex items-center p-3 rounded-lg border border-gray-200';
+                // Apply 'selected-answer' class if it's checked during the test phase
+                if (isChecked && !isResult) {
+                    labelClasses += ' selected-answer';
+                }
+
                 let resultIcon = '';
 
                 if (isResult) {
